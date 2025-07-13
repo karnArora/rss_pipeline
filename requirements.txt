@@ -13,3 +13,4 @@ tldextract
 pandas
 numpy
 python-dotenv
+lxml[html_clean]
