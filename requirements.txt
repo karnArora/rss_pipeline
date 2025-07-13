@@ -1,0 +1,15 @@
+azure-functions
+azure-storage-blob>=12.19
+requests
+beautifulsoup4
+pytz
+python-dateutil
+newspaper3k
+fuzzywuzzy[speedup]
+# sentence-transformers
+openpyxl
+openai
+tldextract
+pandas
+numpy
+python-dotenv
