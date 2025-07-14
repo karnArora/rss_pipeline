@@ -3,15 +3,20 @@ import uuid
 import pandas as pd
 from azure.storage.blob import BlobServiceClient, ContentSettings
 from dotenv import load_dotenv
+import os, logging
+logging.info("AzureWebJobsStorage=%s  AZURE_STORAGE_CONNECTION_STRING=%s",
+             os.getenv("AzureWebJobsStorage"),
+             os.getenv("AZURE_STORAGE_CONNECTION_STRING"))
+
 load_dotenv(override=False)   # pulls in .env for dev/testing, but real env wins
 
 
 def get_blob_service_client() -> BlobServiceClient:
     """
     Returns an authenticated BlobServiceClient using the
-    `AZURE_STORAGE_CONNECTION_STRING` environment variable.
+    `AzureWebJobsStorage` environment variable.
     """
-    conn_str = os.environ["AZURE_STORAGE_CONNECTION_STRING"]
+    conn_str = os.environ["AzureWebJobsStorage"]
     return BlobServiceClient.from_connection_string(conn_str)
 
 
