@@ -1034,7 +1034,7 @@ def run_rss_pipeline():
             default_tz = pytz.timezone(REGION_TIMEZONES.get(region, "UTC"))
 
             now_ist = datetime.now(pytz.utc).astimezone(tz_ist)
-            cutoff = now_ist - timedelta(minutes=30)
+            cutoff = now_ist - timedelta(minutes=15)
             today = now_ist.date()
 
             items = []
