@@ -3,6 +3,7 @@ import pandas as pd
 from azure.storage.blob import BlobServiceClient, ContentSettings
 from dotenv import load_dotenv
 from datetime import datetime, timezone
+import pytz
 import os
 
 load_dotenv(override=False)   # pulls in .env for dev/testing, but real env wins
@@ -24,7 +25,9 @@ def write_df_to_blob(
     content_type: str = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
 ) -> str:
     
-    timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+# Create a timezone-aware datetime in IST
+    ist = pytz.timezone("Asia/Kolkata")
+    timestamp = datetime.now(ist).strftime("%Y%m%dT%H%M%S%z")
     blob_name = f"{prefix}{timestamp}.xlsx"
 
     # ➊ save DataFrame to bytes
