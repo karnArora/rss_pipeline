@@ -28,16 +28,16 @@ def http_entry(req: func.HttpRequest) -> func.HttpResponse:
         return func.HttpResponse(f"❌ Error: {exc}", status_code=500)
 
 # ── Timer trigger (optional) ─────────────────────────────────
-# @app.function_name("rssTimerTrigger")
-# @app.schedule(                    # <- **use keyword arguments**
-#     schedule="0 */30 * * * *",    # every 30 minutes
-#     arg_name="timer",
-#     run_on_startup=False
-# )
-# def timer_entry(timer: func.TimerRequest) -> None:
-#     logging.info("Scheduled run firing")
-#     df = run_rss_pipeline()
-#     write_df_to_blob(
-#         df,
-#         container=os.getenv("OUTPUT_CONTAINER", "rss-output")
-#     )
+@app.function_name("rssTimerTrigger")
+@app.schedule(                    # <- **use keyword arguments**
+    schedule="0 */15 * * * *",    # every 15 minutes
+    arg_name="timer",
+    run_on_startup=False
+)
+def timer_entry(timer: func.TimerRequest) -> None:
+    logging.info("Scheduled run firing")
+    df = run_rss_pipeline()
+    write_df_to_blob(
+        df,
+        container=os.getenv("OUTPUT_CONTAINER", "rss-output")
+    )

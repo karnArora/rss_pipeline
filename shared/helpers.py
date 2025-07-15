@@ -1,12 +1,9 @@
 import os
-import uuid
 import pandas as pd
 from azure.storage.blob import BlobServiceClient, ContentSettings
 from dotenv import load_dotenv
-import os, logging
-logging.info("AzureWebJobsStorage=%s  AZURE_STORAGE_CONNECTION_STRING=%s",
-             os.getenv("AzureWebJobsStorage"),
-             os.getenv("AZURE_STORAGE_CONNECTION_STRING"))
+from datetime import datetime, timezone
+import os
 
 load_dotenv(override=False)   # pulls in .env for dev/testing, but real env wins
 
@@ -26,11 +23,9 @@ def write_df_to_blob(
     prefix: str = "rss_",
     content_type: str = "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
 ) -> str:
-    """
-    Saves `df` to Excel in a memory buffer, uploads it to the given container,
-    and returns the public/blob SAS URL.
-    """
-    blob_name = f"{prefix}{uuid.uuid4().hex}.xlsx"
+    
+    timestamp = datetime.now(timezone.utc).strftime("%Y%m%dT%H%M%SZ")
+    blob_name = f"{prefix}{timestamp}.xlsx"
 
     # ➊ save DataFrame to bytes
     import io
