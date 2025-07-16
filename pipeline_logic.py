@@ -1009,16 +1009,16 @@ def run_rss_pipeline():
         ("Germany", "https://rss.dw.com/rdf/rss-en-top")
     ]
 
-        # ─── 4. HELPER: REGION LOOKUP FOR EACH FEED ────────────────────────────────────
+        # ─── 1. HELPER: REGION LOOKUP FOR EACH FEED ────────────────────────────────────
     feed_url_to_region = {feed_url: region for region, feed_url in data}
 
-    # ─── 5. DATETIME UTILS ─────────────────────────────────────────────────────────
+    # ─── 2. DATETIME UTILS ─────────────────────────────────────────────────────────
     tz_ist = pytz.timezone('Asia/Kolkata')
     def utc_to_ist(dt_utc):
         """Convert aware-UTC datetime → aware IST datetime."""
         return dt_utc.astimezone(tz_ist)
 
-    # ─── 6. ARTICLE SCRAPER ────────────────────────────────────────────────────────
+    # ─── 3. ARTICLE SCRAPER ────────────────────────────────────────────────────────
     def fetch_rss_articles(feed_url):
         """
         Parse one RSS feed → list of tuples ready for DataFrame.
@@ -1069,7 +1069,7 @@ def run_rss_pipeline():
             print(f"[skip] {feed_url}: {e}")
             return []
 
-    # ─── 7. FETCH ALL FEEDS (multi-threaded for speed) ────────────────────────────
+    # ─── 4. FETCH ALL FEEDS (multi-threaded for speed) ────────────────────────────
     all_articles = []
     with ThreadPoolExecutor(max_workers=50) as pool:
         futures = {pool.submit(fetch_rss_articles, url): url for url in rss_feeds}
@@ -1084,7 +1084,7 @@ def run_rss_pipeline():
             "date_ist","Description","Author","Category","URL"
     ])
 
-    # ─── 8. DATETIME COERCION & LAST-30-MIN FILTER (safety) ───────────────────────
+    # ─── 5. DATETIME COERCION & LAST-30-MIN FILTER (safety) ───────────────────────
     parts = []
     for start in range(0, len(df), 50):
         part = df.iloc[start:start+50].copy()
@@ -1097,12 +1097,12 @@ def run_rss_pipeline():
         else ts.tz_convert("Asia/Kolkata") if pd.notnull(ts) else ts
     )
 
-    # 2️⃣ cutoff timestamp (already IST-aware)
+    # cutoff timestamp (already IST-aware)
     cutoff_pd = pd.Timestamp.now(tz="Asia/Kolkata") - pd.Timedelta(minutes=30)
 
-    # ✅ time-window filter – now both operands are tz-aware
+    # time-window filter – now both operands are tz-aware
     df = df[df["date_ist"] >= cutoff_pd]
-    # ─── 9. DEDUPLICATE BASIC (title + description + URL) ─────────────────────────
+    # ─── 6. DEDUPLICATE BASIC (title + description + URL) ─────────────────────────
     df = df.drop_duplicates(subset=["Title","Description"]).reset_index(drop=True)
 
     print(f"✔️  Fresh, unique articles: {len(df)}")
@@ -1126,7 +1126,7 @@ def run_rss_pipeline():
             return df
 
     df = basic_hygiene(df)
-    # ─── 10. ROOT-URL COLUMN + EXTRACTION HELPERS ─────────────────────────────────
+    # ─── 7. ROOT-URL COLUMN + EXTRACTION HELPERS ─────────────────────────────────
     def extract_root(url):
         try:
             p = urlparse(url)
@@ -1202,7 +1202,7 @@ def run_rss_pipeline():
             return text[:idx].strip() if idx!=-1 else text
         except Exception: return None
 
-    # ─── 11. CONTENT EXTRACTION PIPELINE ──────────────────────────────────────────
+    # ─── 8. CONTENT EXTRACTION PIPELINE ──────────────────────────────────────────
     def pipeline(row):
         url = row["Link"]
 
