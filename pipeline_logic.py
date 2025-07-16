@@ -1085,12 +1085,7 @@ def run_rss_pipeline():
     ])
 
     # ─── 5. DATETIME COERCION & LAST-30-MIN FILTER (safety) ───────────────────────
-    parts = []
-    for start in range(0, len(df), 50):
-        part = df.iloc[start:start+50].copy()
-        part["PublishedDate"] = pd.to_datetime(part["PublishedDate"], utc=True, errors="coerce")
-        parts.append(part)
-    df = pd.concat(parts, ignore_index=True)
+
     df["date_ist"] = pd.to_datetime(df["date_ist"], errors="coerce")
     df["date_ist"] = df["date_ist"].apply(
         lambda ts: ts.tz_localize("Asia/Kolkata") if pd.notnull(ts) and ts.tzinfo is None
@@ -1446,7 +1441,7 @@ def run_rss_pipeline():
 
 
     # strip tz from dates if needed
-    for col in ("date_ist", "PublishedDate"):
+    for col in ("date_ist"):
         if col in df_enriched:
             df_enriched[col] = (
                 pd.to_datetime(df_enriched[col], errors="coerce")
@@ -1456,6 +1451,7 @@ def run_rss_pipeline():
     df_enriched['general_category'] = df_enriched['Category'].str.strip()
     df = df.drop(columns=["Title", "Category"], inplace=True, errors='ignore')
     df_enriched["id"] = np.arange(len(df_enriched))
+    df_enriched.drop(columns=["PublishedDate"], inplace=True, errors='ignore')
     df_enriched = final_rename(df_enriched)
                               
     return df_enriched
