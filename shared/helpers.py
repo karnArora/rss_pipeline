@@ -4,10 +4,17 @@ from azure.storage.blob import BlobServiceClient, ContentSettings
 from dotenv import load_dotenv
 from datetime import datetime, timezone
 import pytz
-import os
+import os, re
+import io
 
-load_dotenv(override=False)   # pulls in .env for dev/testing, but real env wins
+load_dotenv(override=False)
 
+_ILLEGAL_EXCEL_CHARS = re.compile(r'[\x00-\x08\x0B-\x0C\x0E-\x1F]')
+
+def _clean_cell(x):
+    if isinstance(x, str):
+        return _ILLEGAL_EXCEL_CHARS.sub('', x)
+    return x
 
 def get_blob_service_client() -> BlobServiceClient:
     """
@@ -30,13 +37,14 @@ def write_df_to_blob(
     timestamp = datetime.now(ist).strftime("%Y%m%dT%H%M%S%z")
     blob_name = f"{prefix}{timestamp}.xlsx"
 
-    # ➊ save DataFrame to bytes
-    import io
     buffer = io.BytesIO()
+    for col in df.select_dtypes(include="object"):
+        df[col] = df[col].map(_clean_cell)
+
     df.to_excel(buffer, index=False, engine="openpyxl")
     buffer.seek(0)
 
-    # ➋ upload
+    # upload
     svc = get_blob_service_client()
     container_client = svc.get_container_client(container)
     try:
