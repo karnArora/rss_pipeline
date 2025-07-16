@@ -1449,7 +1449,7 @@ def run_rss_pipeline():
             )
     df_enriched['headline'] = df_enriched['Title'].str.strip()
     df_enriched['general_category'] = df_enriched['Category'].str.strip()
-    df_enriched = df_enriched.drop(columns=["Title", "Category"], inplace=True, errors='ignore')
+    df_enriched = df_enriched.drop(columns=["Title", "Category"], errors='ignore')
     df_enriched["id"] = np.arange(len(df_enriched))
     df_enriched.drop(columns=["PublishedDate"], inplace=True, errors='ignore')
     df_enriched = final_rename(df_enriched)
